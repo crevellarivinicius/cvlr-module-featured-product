@@ -1,0 +1,152 @@
+<?php
+/**
+ * Copyright © Vinícius Crevellari. All rights reserved.
+ * See COPYING.txt for license details.
+ *
+ * Hyvä variant of the featured product box (Alpine.js + Tailwind CSS).
+ * Activate it by mapping this template through a Hyvä theme or the
+ * hyva-themes/module-compat-module-fallback mechanism (see README).
+ *
+ * @var \Crevellari\FeaturedProduct\Block\FeaturedProduct $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+/** @var \Crevellari\FeaturedProduct\ViewModel\FeaturedProduct $viewModel */
+$viewModel = $block->getData('view_model');
+$product = $viewModel->getProduct();
+$image = $viewModel->getImage();
+$initialStock = $viewModel->getInitialStock();
+$initialQty = $initialStock !== null ? $initialStock->getQty() : 0;
+$initialSalable = $initialStock !== null && $initialStock->getIsSalable();
+?>
+<section class="w-full mb-8"
+         aria-label="<?= $escaper->escapeHtmlAttr(__('Featured product')) ?>"
+         x-data="initFeaturedProductStock()"
+         x-init="start()">
+    <a class="flex flex-col md:flex-row items-center gap-6 rounded border border-gray-300 bg-white p-6
+              transition-colors hover:border-blue-600 focus-visible:outline focus-visible:outline-2
+              focus-visible:outline-blue-600"
+       href="<?= $escaper->escapeUrl($viewModel->getProductUrl()) ?>"
+       title="<?= $escaper->escapeHtmlAttr(__('Go to the %1 product page', $product->getName())) ?>">
+        <div class="w-full max-w-[220px] md:w-72 md:max-w-[280px] shrink-0">
+            <?php if ($image !== null): ?>
+                <?= $image->toHtml() ?>
+            <?php endif; ?>
+        </div>
+        <div class="flex flex-col items-center md:items-start gap-3 min-w-0 text-center md:text-left">
+            <span class="text-xs font-semibold uppercase tracking-widest text-blue-600">
+                <?= $escaper->escapeHtml(__($block->getData('box_title') ?: 'Featured Product')) ?>
+            </span>
+            <h2 class="text-2xl md:text-3xl font-light text-gray-800">
+                <?= $escaper->escapeHtml($product->getName()) ?>
+            </h2>
+            <div class="text-xl font-bold text-gray-900">
+                <?= $escaper->escapeHtml($viewModel->getFormattedFinalPrice()) ?>
+            </div>
+
+            <div aria-live="polite">
+                <div class="inline-flex flex-wrap items-center gap-2 rounded px-4 py-2 text-sm"
+                     :class="{
+                         'bg-green-50 text-green-800': !isOutOfStock() && !isLowStock(),
+                         'bg-amber-50 text-amber-800': isLowStock(),
+                         'bg-red-50 text-red-700': isOutOfStock()
+                     }">
+                    <span class="h-2 w-2 rounded-full bg-current" aria-hidden="true"></span>
+                    <template x-if="!isOutOfStock()">
+                        <span>
+                            <?= $escaper->escapeHtml(__('Available for sale:')) ?>
+                            <strong class="font-bold" x-text="qty"></strong>
+                            <?= $escaper->escapeHtml(__('units')) ?>
+                            <strong class="font-bold uppercase text-xs tracking-wide"
+                                    x-show="isLowStock()"><?= $escaper->escapeHtml(__('Last units!')) ?></strong>
+                        </span>
+                    </template>
+                    <template x-if="isOutOfStock()">
+                        <span class="font-semibold"><?= $escaper->escapeHtml(__('Out of stock')) ?></span>
+                    </template>
+                </div>
+                <p class="mt-1 text-xs text-gray-500">
+                    <span x-text="updatedLabel()"></span>
+                    <span class="text-red-600" x-show="hasError">
+                        <?= $escaper->escapeHtml(__('Could not refresh, retrying...')) ?>
+                    </span>
+                </p>
+            </div>
+
+            <span class="mt-1 inline-flex items-center gap-2 rounded bg-blue-600 px-4 py-2 text-sm
+                         font-semibold text-white">
+                <?= $escaper->escapeHtml(__('View product')) ?>
+                <span aria-hidden="true">&#8594;</span>
+            </span>
+        </div>
+    </a>
+
+    <script>
+        function initFeaturedProductStock() {
+            return {
+                qty: <?= /* @noEscape */ json_encode((float)$initialQty) ?>,
+                isSalable: <?= /* @noEscape */ json_encode($initialSalable) ?>,
+                updatedAt: new Date(),
+                hasError: false,
+                etag: null,
+                timer: null,
+                lowStockThreshold: <?= /* @noEscape */ json_encode($viewModel->getLowStockThreshold()) ?>,
+                refreshInterval: <?= /* @noEscape */ json_encode($viewModel->getRefreshInterval()) ?>,
+                stockUrl: '<?= $escaper->escapeJs($escaper->escapeUrl($block->getUrl('featuredproduct/stock/get'))) ?>',
+
+                isOutOfStock() {
+                    return !this.isSalable || this.qty <= 0;
+                },
+                isLowStock() {
+                    return !this.isOutOfStock()
+                        && this.lowStockThreshold > 0
+                        && this.qty <= this.lowStockThreshold;
+                },
+                updatedLabel() {
+                    return '<?= $escaper->escapeJs(__('Updated at %1')) ?>'
+                        .replace('%1', this.updatedAt.toLocaleTimeString());
+                },
+                refresh() {
+                    const headers = this.etag ? {'If-None-Match': this.etag} : {};
+
+                    fetch(this.stockUrl, {headers: headers})
+                        .then(response => {
+                            this.etag = response.headers.get('ETag') || this.etag;
+
+                            if (response.status === 304) {
+                                this.updatedAt = new Date();
+                                this.hasError = false;
+
+                                return null;
+                            }
+
+                            if (!response.ok) {
+                                throw new Error('HTTP ' + response.status);
+                            }
+
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data && data.success) {
+                                this.qty = parseFloat(data.qty);
+                                this.isSalable = Boolean(data.is_salable);
+                                this.updatedAt = new Date();
+                                this.hasError = false;
+                            }
+                        })
+                        .catch(() => {
+                            this.hasError = true;
+                        });
+                },
+                start() {
+                    this.refresh();
+                    this.timer = setInterval(() => {
+                        if (!document.hidden) {
+                            this.refresh();
+                        }
+                    }, Math.max(this.refreshInterval, 5) * 1000);
+                }
+            };
+        }
+    </script>
+</section>
