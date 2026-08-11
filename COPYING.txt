@@ -1,0 +1,5 @@
+Copyright © Vinícius Augusto Crevellari.
+
+Licensed under the Open Software License version 3.0 (OSL-3.0),
+the same license used by Magento Open Source:
+https://opensource.org/licenses/OSL-3.0
