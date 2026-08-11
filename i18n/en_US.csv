@@ -14,6 +14,7 @@
 "No featured product SKU is configured.","No featured product SKU is configured."
 "The featured product box is disabled.","The featured product box is disabled."
 "Unable to resolve the stock for the current website.","Unable to resolve the stock for the current website."
+"The SKU ""%1"" does not match any product. Please check the value and try again.","The SKU ""%1"" does not match any product. Please check the value and try again."
 "General","General"
 "Display Settings","Display Settings"
 "Enabled","Enabled"

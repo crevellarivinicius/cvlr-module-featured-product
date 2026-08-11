@@ -31,7 +31,8 @@
                        showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Product SKU</label>
                     <validate>required-entry no-whitespace</validate>
-                    <comment>SKU of the product to feature on the homepage (e.g. 24-MB01).</comment>
+                    <backend_model>Crevellari\FeaturedProduct\Model\Config\Backend\Sku</backend_model>
+                    <comment>SKU of the product to feature on the homepage (e.g. 24-MB01). Validated on save.</comment>
                     <depends>
                         <field id="enabled">1</field>
                     </depends>
