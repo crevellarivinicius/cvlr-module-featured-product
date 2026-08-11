@@ -1,0 +1,16 @@
+# Copyright © Vinícius Crevellari. All rights reserved.
+# See COPYING.txt for license details.
+
+type Query {
+    featuredProductStock: FeaturedProductStock
+        @resolver(class: "Crevellari\\FeaturedProduct\\Model\\Resolver\\FeaturedProductStock")
+        @doc(description: "Salable stock information of the product featured on the homepage.")
+        @cache(cacheable: false)
+}
+
+type FeaturedProductStock @doc(description: "Salable stock information of the featured product.") {
+    sku: String @doc(description: "Featured product SKU.")
+    qty: Float @doc(description: "Quantity available for sale (MSI salable quantity).")
+    is_salable: Boolean @doc(description: "Whether the product can currently be sold.")
+    updated_at: String @doc(description: "ISO 8601 timestamp of when the information was read.")
+}
