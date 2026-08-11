@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint:
+    name: PHP ${{ matrix.php }} syntax check
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ['8.1', '8.2']
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+
+      - name: Lint PHP files
+        run: |
+          find . -name '*.php' -not -path './vendor/*' -print0 \
+            | xargs -0 -n1 php -l
+
+  phpcs:
+    name: Magento Coding Standard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer
+
+      - name: Install Magento Coding Standard
+        run: |
+          composer create-project --no-interaction --stability=dev \
+            magento/magento-coding-standard "$RUNNER_TEMP/mcs"
+
+      - name: Run phpcs (Magento2 ruleset)
+        run: |
+          "$RUNNER_TEMP/mcs/vendor/bin/phpcs" --standard=Magento2 \
+            --extensions=php,phtml --ignore='*/Test/*,*/vendor/*' .
+
+  # Os testes unitários dependem do framework do Magento e rodam dentro de
+  # uma instalacao (ver README): vendor/bin/phpunit a partir de dev/tests/unit.
