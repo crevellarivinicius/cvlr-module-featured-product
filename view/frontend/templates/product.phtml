@@ -1,0 +1,84 @@
+<?php
+/**
+ * Copyright © Vinícius Crevellari. All rights reserved.
+ * See COPYING.txt for license details.
+ *
+ * Featured product box - first element of the homepage main content.
+ *
+ * @var \Crevellari\FeaturedProduct\Block\FeaturedProduct $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+/** @var \Crevellari\FeaturedProduct\ViewModel\FeaturedProduct $viewModel */
+$viewModel = $block->getData('view_model');
+$product = $viewModel->getProduct();
+$image = $viewModel->getImage();
+$initialStock = $viewModel->getInitialStock();
+$initialQty = $initialStock !== null ? $initialStock->getQty() : null;
+
+/** @var \Magento\Framework\Pricing\Render|false $priceRender */
+$priceRender = $block->getLayout()->getBlock('product.price.render.default');
+?>
+<section class="featured-product"
+         aria-label="<?= $escaper->escapeHtmlAttr(__('Featured product')) ?>">
+    <a class="featured-product__card"
+       href="<?= $escaper->escapeUrl($viewModel->getProductUrl()) ?>"
+       title="<?= $escaper->escapeHtmlAttr(__('Go to the %1 product page', $product->getName())) ?>">
+        <div class="featured-product__media">
+            <?php if ($image !== null): ?>
+                <?= $image->toHtml() ?>
+            <?php endif; ?>
+        </div>
+        <div class="featured-product__details">
+            <span class="featured-product__eyebrow">
+                <?= $escaper->escapeHtml(__($block->getData('box_title') ?: 'Featured Product')) ?>
+            </span>
+            <h2 class="featured-product__name"><?= $escaper->escapeHtml($product->getName()) ?></h2>
+            <div class="featured-product__price">
+                <?php if ($priceRender): ?>
+                    <?= /* @noEscape */ $priceRender->render(
+                        \Magento\Catalog\Pricing\Price\FinalPrice::PRICE_CODE,
+                        $product,
+                        ['zone' => \Magento\Framework\Pricing\Render::ZONE_ITEM_LIST]
+                    ) ?>
+                <?php else: ?>
+                    <span class="price"><?= $escaper->escapeHtml($viewModel->getFormattedFinalPrice()) ?></span>
+                <?php endif; ?>
+            </div>
+
+            <div id="featured-product-stock"
+                 class="featured-product__stock"
+                 data-bind="scope: 'featured-product-stock'">
+                <!-- ko template: getTemplate() --><!-- /ko -->
+                <div class="featured-product__stock-placeholder" data-role="stock-placeholder">
+                    <span class="featured-product__stock-label">
+                        <?= $escaper->escapeHtml(__('Available for sale:')) ?>
+                    </span>
+                    <span class="featured-product__stock-qty">
+                        <?php if ($initialQty !== null): ?>
+                            <?= $escaper->escapeHtml(
+                                $initialQty == floor($initialQty)
+                                    ? (string)(int)$initialQty
+                                    : (string)round($initialQty, 2)
+                            ) ?>
+                        <?php else: ?>
+                            &#8230;
+                        <?php endif; ?>
+                    </span>
+                </div>
+            </div>
+
+            <span class="featured-product__cta">
+                <?= $escaper->escapeHtml(__('View product')) ?>
+                <span class="featured-product__cta-arrow" aria-hidden="true">&#8594;</span>
+            </span>
+        </div>
+    </a>
+    <script type="text/x-magento-init">
+    {
+        "#featured-product-stock": {
+            "Magento_Ui/js/core/app": <?= /* @noEscape */ $block->getJsLayout() ?>
+        }
+    }
+    </script>
+</section>

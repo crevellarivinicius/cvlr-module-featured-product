@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Vinícius Crevellari. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="Crevellari_FeaturedProduct::css/featured-product.css"/>
+    </head>
+    <body>
+        <referenceContainer name="content">
+            <block class="Crevellari\FeaturedProduct\Block\FeaturedProduct"
+                   name="featured.product"
+                   as="featured_product"
+                   template="Crevellari_FeaturedProduct::product.phtml"
+                   before="-"/>
+        </referenceContainer>
+
+        <referenceBlock name="featured.product">
+            <arguments>
+                <argument name="view_model" xsi:type="object">Crevellari\FeaturedProduct\ViewModel\FeaturedProduct</argument>
+                <argument name="box_title" xsi:type="string" translate="true">Featured Product</argument>
+                <!-- Runtime values (endpoint URL, interval, initial stock) are merged
+                     into the config node by Block\FeaturedProduct::getJsLayout() -->
+                <argument name="jsLayout" xsi:type="array">
+                    <item name="components" xsi:type="array">
+                        <item name="featured-product-stock" xsi:type="array">
+                            <item name="component" xsi:type="string">Crevellari_FeaturedProduct/js/view/stock</item>
+                            <item name="config" xsi:type="array">
+                                <item name="template" xsi:type="string">Crevellari_FeaturedProduct/stock</item>
+                            </item>
+                        </item>
+                    </item>
+                </argument>
+            </arguments>
+        </referenceBlock>
+    </body>
+</page>

@@ -1,0 +1,294 @@
+/**
+ * Copyright © Vinícius Crevellari. All rights reserved.
+ * See COPYING.txt for license details.
+ *
+ * Featured product box. Follows the Luma palette: #1979c3/#006bb4 for
+ * actions, #333/#757575 for text, #ccc for borders and the theme message
+ * colors (success/warning/error) for the stock states.
+ * Loaded only on the homepage via cms_index_index.xml.
+ */
+
+.featured-product {
+    display: block;
+    margin: 0 0 40px;
+    width: 100%;
+}
+
+.featured-product__card {
+    align-items: center;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    box-sizing: border-box;
+    color: #333;
+    display: flex;
+    gap: 30px;
+    padding: 30px;
+    text-decoration: none;
+    transition: border-color 0.2s ease-out;
+    width: 100%;
+}
+
+.featured-product__card:hover,
+.featured-product__card:focus,
+.featured-product__card:active {
+    border-color: #1979c3;
+    color: #333;
+    text-decoration: none;
+}
+
+.featured-product__card:focus-visible {
+    outline: 2px solid #1979c3;
+    outline-offset: 2px;
+}
+
+.featured-product__media {
+    align-items: center;
+    display: flex;
+    flex: 0 0 280px;
+    justify-content: center;
+    max-width: 280px;
+}
+
+.featured-product__media .product-image-container {
+    width: 100% !important;
+}
+
+.featured-product__media .product-image-wrapper {
+    padding-bottom: 100% !important;
+}
+
+.featured-product__media img {
+    display: block;
+    height: auto;
+    max-width: 100%;
+    mix-blend-mode: multiply;
+}
+
+.featured-product__details {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+}
+
+.featured-product__eyebrow {
+    color: #1979c3;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.featured-product__name {
+    color: #333;
+    font-size: 26px;
+    font-weight: 300;
+    line-height: 1.2;
+    margin: 0;
+    text-wrap: balance;
+}
+
+.featured-product__price {
+    font-size: 20px;
+}
+
+.featured-product__price .price {
+    color: #333;
+    font-weight: 700;
+}
+
+.featured-product__price .old-price .price {
+    color: #757575;
+    font-weight: 400;
+}
+
+/* ---- Real-time stock strip (Luma message colors) ------------------- */
+
+.featured-product__stock {
+    min-height: 56px;
+}
+
+.featured-product__stock-box,
+.featured-product__stock-placeholder {
+    align-items: center;
+    background: #e5efe5;
+    border-radius: 3px;
+    color: #006400;
+    display: inline-flex;
+    flex-wrap: wrap;
+    font-size: 14px;
+    gap: 7px;
+    max-width: 100%;
+    padding: 8px 15px;
+    transition: background-color 0.2s ease-out, color 0.2s ease-out;
+}
+
+.featured-product__stock-indicator {
+    animation: featured-product-breathe 2s ease-in-out infinite;
+    background: currentColor;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+    height: 8px;
+    width: 8px;
+}
+
+.featured-product__stock-qty {
+    font-weight: 700;
+}
+
+/* Low stock state (Luma warning message colors) */
+.featured-product__stock-box--low {
+    background: #fdf0d5;
+    color: #6f4400;
+}
+
+.featured-product__stock-badge {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+/* Out of stock state (Luma error message colors) */
+.featured-product__stock-box--out {
+    background: #fae5e5;
+    color: #e02b27;
+}
+
+.featured-product__stock-box--out .featured-product__stock-indicator {
+    animation: none;
+}
+
+.featured-product__stock-label--out {
+    font-weight: 600;
+}
+
+/* Pulse when the quantity changes (state feedback) */
+.featured-product__stock-box--updated {
+    animation: featured-product-pulse 1.2s ease-out;
+}
+
+.featured-product__stock-meta {
+    color: #757575;
+    display: block;
+    font-size: 12px;
+    margin-top: 6px;
+}
+
+.featured-product__stock-error {
+    color: #e02b27;
+    margin-left: 8px;
+}
+
+/* Placeholder shimmer before Knockout takes over */
+.featured-product__stock-placeholder .featured-product__stock-qty {
+    animation: featured-product-shimmer 1.2s ease-in-out infinite;
+}
+
+/* ---- CTA (Luma primary button) -------------------------------------- */
+
+.featured-product__cta {
+    align-items: center;
+    align-self: flex-start;
+    background: #1979c3;
+    border-radius: 3px;
+    color: #fff;
+    display: inline-flex;
+    font-size: 14px;
+    font-weight: 600;
+    gap: 8px;
+    margin-top: 4px;
+    padding: 8px 17px;
+    transition: background-color 0.2s ease-out;
+}
+
+.featured-product__card:hover .featured-product__cta,
+.featured-product__card:focus .featured-product__cta {
+    background: #006bb4;
+}
+
+.featured-product__cta-arrow {
+    transition: transform 0.2s ease-out;
+}
+
+.featured-product__card:hover .featured-product__cta-arrow {
+    transform: translateX(3px);
+}
+
+/* ---- Animations ---------------------------------------------------- */
+
+@keyframes featured-product-pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(0, 100, 0, 0.35);
+    }
+
+    100% {
+        box-shadow: 0 0 0 10px rgba(0, 100, 0, 0);
+    }
+}
+
+@keyframes featured-product-breathe {
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.45;
+    }
+}
+
+@keyframes featured-product-shimmer {
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.35;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .featured-product__card,
+    .featured-product__cta,
+    .featured-product__cta-arrow,
+    .featured-product__stock-indicator,
+    .featured-product__stock-box--updated,
+    .featured-product__stock-placeholder .featured-product__stock-qty {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+/* ---- Responsive ----------------------------------------------------- */
+
+@media only screen and (max-width: 767px) {
+    .featured-product__card {
+        flex-direction: column;
+        gap: 20px;
+        padding: 20px;
+        text-align: center;
+    }
+
+    .featured-product__media {
+        flex-basis: auto;
+        max-width: 220px;
+        width: 100%;
+    }
+
+    .featured-product__name {
+        font-size: 22px;
+    }
+
+    .featured-product__details {
+        align-items: center;
+    }
+
+    .featured-product__cta {
+        align-self: center;
+    }
+}
