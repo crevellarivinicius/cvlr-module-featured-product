@@ -5,133 +5,173 @@
 ![PHP](https://img.shields.io/badge/PHP-8.1%20%7C%208.2-777bb4)
 ![License](https://img.shields.io/badge/license-OSL--3.0-2ea44f)
 
-Módulo para **Magento 2.4.6 Open Source (tema Luma)** que exibe um **produto em destaque na homepage**, com a **quantidade disponível para venda atualizada em tempo real** (sem recarregar a página).
+**English** · [Português (Brasil)](README.pt-BR.md)
 
+A Magento 2 module that renders a **featured product box on the homepage** with the **quantity available for sale updated in near real time** — no page reloads.
 
----
+![Featured product box on the Luma homepage](docs/home-desktop.png)
 
-## Visão geral
-
-O módulo insere um box como **primeiro elemento do conteúdo principal** da homepage (logo abaixo do cabeçalho e menu), ocupando **toda a largura do content main**, contendo:
-
-- **Título** do produto;
-- **Preço** renderizado pelo *pricing render pipeline* nativo (respeita preço especial, regras de exibição de impostos e moeda da store);
-- **Imagem base** (image role `image`), servida pelo pipeline de imagens do catálogo (cache/resize nativos);
-- **Quantidade disponível para venda** (*salable quantity* do MSI), atualizada periodicamente via Knockout + polling AJAX;
-- Clique em qualquer área do box leva à **página do produto**.
-
-Nenhum arquivo do tema é modificado: **tudo vive dentro da pasta do módulo**.
-
-![Box de produto em destaque na homepage Luma](docs/home-desktop.png)
-
-| Estoque baixo | Esgotado | Mobile |
+| Low stock | Out of stock | Mobile |
 |---|---|---|
-| ![Estoque baixo](docs/home-lowstock.png) | ![Esgotado](docs/home-outofstock.png) | ![Mobile](docs/home-mobile.png) |
+| ![Low stock](docs/home-lowstock.png) | ![Out of stock](docs/home-outofstock.png) | ![Mobile](docs/home-mobile.png) |
 
-## Instalação
+## Features
 
-### Opção A — Composer (recomendada)
+- Featured product box as the **first element of the homepage main content**, full width, with title, price (native pricing render pipeline), base image and a link to the product page;
+- **Quantity available for sale in real time** — the MSI *salable quantity* (physical stock minus reservations), polled by a Knockout component on a configurable interval;
+- **Cheap polling**: the endpoint emits an `ETag` and answers an empty `304 Not Modified` while nothing changes; polling pauses when the browser tab is hidden;
+- Product selected **by SKU in the admin panel** (validated on save), with refresh interval and low-stock threshold — all store-view scoped;
+- Low stock ("Last units!"), out of stock and network error states, styled with the Luma theme's own message colors;
+- Homepage **full page cache invalidated automatically** when the featured product changes (`IdentityInterface`);
+- The same service contract feeds the storefront, a **REST endpoint** and a **GraphQL query**;
+- **Hyvä-ready**: an Alpine.js/Tailwind template variant ships with the module;
+- `en_US` and `pt_BR` translations, unit and integration tests, CI with the Magento coding standard.
 
-Com o zip extraído (ou repositório clonado) em uma pasta local, ex.: `extensions/crevellari/module-featured-product`:
+No theme files are modified: everything lives inside the module.
+
+## Installation
+
+### Composer
 
 ```bash
-composer config repositories.crevellari path extensions/crevellari/module-featured-product
-composer require crevellari/module-featured-product:1.0.0
+composer require crevellari/module-featured-product
 bin/magento module:enable Crevellari_FeaturedProduct
 bin/magento setup:upgrade
 bin/magento setup:di:compile   # production mode
 bin/magento cache:flush
 ```
 
-### Opção B — app/code
+From a local clone (path repository):
+
+```bash
+composer config repositories.crevellari path extensions/crevellari/module-featured-product
+composer require crevellari/module-featured-product:@dev
+```
+
+### app/code
 
 ```bash
 mkdir -p app/code/Crevellari/FeaturedProduct
-# copie o conteúdo do módulo para a pasta acima
+# copy the module contents into the folder above
 bin/magento module:enable Crevellari_FeaturedProduct
 bin/magento setup:upgrade
 bin/magento cache:flush
 ```
 
-## Configuração (painel admin)
+## Configuration
 
 **Stores → Configuration → Catalog → Featured Product**
 
-| Campo | Descrição | Padrão |
+| Field | Description | Default |
 |---|---|---|
-| Enabled | Liga/desliga o box na homepage | Sim |
-| Product SKU | SKU do produto em destaque (digite o SKU, ex. `24-MB01`) | `24-MB01` |
-| Stock Refresh Interval (seconds) | Intervalo do polling de estoque (5–300s, validado também no servidor) | 10 |
-| Low Stock Threshold | Qtde. igual/abaixo da qual o box exibe o alerta "Últimas unidades!" (0 desativa) | 5 |
+| Enabled | Toggles the box on the homepage | Yes |
+| Product SKU | SKU of the featured product — validated against the catalog on save | `24-MB01` |
+| Stock Refresh Interval (seconds) | Polling interval (5–300s, also enforced server-side) | 10 |
+| Low Stock Threshold | At or below this quantity the box shows the "Last units!" highlight (0 disables) | 5 |
 
-Todos os campos têm escopo de **store view** (suporte multi-loja/multi-idioma) e botão *Use system value* (`canRestore`).
+All fields are **store-view scoped** and restorable to system values (`canRestore`).
 
-## Como funciona a atualização em tempo real
+## How the real-time update works
 
-1. O componente Knockout (`view/frontend/web/js/view/stock.js`) faz uma requisição imediata no carregamento e agenda um `setInterval` com o intervalo configurado no admin;
-2. Cada ciclo chama `GET /featuredproduct/stock/get` — um controller fino (`HttpGetActionInterface`) que apenas delega ao service contract e formata o JSON;
-3. O service (`Api\StockInformationInterface` → `Model\StockInformation`) consulta a salable quantity do MSI (`GetProductSalableQtyInterface`), com fallback para o estoque legado em tipos de produto sem source item;
-4. A resposta atualiza os observables (`qty`, `isSalable`, `updatedAt`) e o template Knockout re-renderiza apenas o indicador de estoque — nada mais na página muda.
+1. The Knockout component (`view/frontend/web/js/view/stock.js`) fetches once on load and schedules a `setInterval` with the configured interval;
+2. Each cycle calls `GET /featuredproduct/stock/get` — a thin controller (`HttpGetActionInterface`) that only delegates to the service contract and formats the JSON;
+3. The service (`Api\StockInformationInterface` → `Model\StockInformation`) reads the MSI salable quantity (`GetProductSalableQtyInterface`) resolved for the current website, falling back to the legacy stock item for product types without source item management;
+4. The response updates the observables and the Knockout template re-renders only the stock indicator.
 
-- A quantidade exibida é a **salable quantity do MSI** (estoque físico − reservas), que é exatamente a "quantidade disponível para venda" — decrementa na hora em que um pedido é feito, sem esperar reindexação;
-- O polling **pausa quando a aba está em segundo plano** (Page Visibility API) e atualiza imediatamente quando o visitante volta;
-- Em caso de falha de rede, o último valor conhecido permanece na tela com um aviso discreto e o componente continua tentando;
-- O SKU **não** trafega no request: o endpoint lê a configuração no servidor, evitando que seja usado para sondar estoque de produtos arbitrários;
-- Resposta JSON com `Cache-Control: no-store` (nunca cacheada).
+Cost control details:
 
-### Bônus: REST API
+- The displayed number is the **salable quantity** (physical − reservations): it drops the moment an order is placed, with no reindex involved;
+- Responses carry an **`ETag`**; the component sends `If-None-Match`, so unchanged polls come back as an empty **304** ([ADR 0001](docs/adr/0001-polling-with-etag-over-push.md) documents why this beats SSE/WebSocket here);
+- Polling **pauses while the tab is hidden** (Page Visibility API) and refreshes immediately on return;
+- On network failures the last known value stays on screen with a discreet notice, and the component keeps retrying;
+- The SKU never travels in the request — the endpoint reads it from configuration server-side.
 
-O mesmo service contract é exposto via WebAPI:
+## APIs
+
+The same service contract is exposed over REST:
 
 ```
 GET /rest/V1/featured-product/stock
 ```
 
-## Arquitetura e decisões técnicas
+And over GraphQL:
 
-| Camada | Arquivo | Papel |
-|---|---|---|
-| Service contract | `Api/StockInformationInterface` + `Model/StockInformation` | Única fonte da regra de negócio de estoque (usada pelo controller, pela webapi e pelo render server-side) |
-| DTO | `Api/Data/StockInterface` + `Model/Data/Stock` | Estruturação dos dados trafegados |
-| Controller | `Controller/Stock/Get.php` | **Fino**: só HTTP→service→JSON. Não instancia blocos nem contém lógica (MVC respeitado) |
-| ViewModel | `ViewModel/FeaturedProduct.php` | Dados do produto para o template (substitui "fat blocks") |
-| Block | `Block/FeaturedProduct.php` | Cola de apresentação: mescla config dinâmica no `jsLayout` (mesmo padrão do checkout) e implementa `IdentityInterface` para o Full Page Cache da home ser invalidado quando o produto muda |
-| Layout | `view/frontend/layout/cms_index_index.xml` | `referenceContainer`/`referenceBlock`, **block arguments** (view model, título, jsLayout), CSS carregado **somente na homepage** |
-| JS | `view/frontend/web/js/view/stock.js` | `uiComponent` **Knockout** carregado via RequireJS apenas onde é usado (sem `default_head_blocks`) |
-| Config | `etc/adminhtml/system.xml`, `etc/config.xml`, `etc/acl.xml` | Configuração via admin com ACL própria e defaults |
-
-### Recursos nativos de layout demonstrados
-
-- **Reference block**: declaração do bloco em `referenceContainer name="content"` e configuração via `referenceBlock name="featured.product"`;
-- **Block arguments**: `view_model`, `box_title` e `jsLayout` passados por `<arguments>`;
-- **jsLayout**: estrutura declarativa do componente no XML, enriquecida em runtime por `Block::getJsLayout()`;
-- **Knockout**: componente com observables/computeds e template KO (`view/frontend/web/template/stock.html`);
-- **Configurações via admin**: seção própria em Stores → Configuration, com seleção do produto por SKU.
-
-### Design alinhado ao Luma
-
-O box não inventa vocabulário visual: reutiliza os tokens do próprio tema —
-cores de mensagem do Luma para os estados de estoque (success `#e5efe5/#006400`,
-warning `#fdf0d5/#6f4400`, error `#fae5e5/#e02b27`), CTA no estilo do botão
-primário (`#1979c3`, hover `#006bb4`, radius 3px), heading com `font-weight: 300`
-como os demais títulos da página, bordas `#ccc` e texto secundário `#757575`.
-O resultado parece parte nativa do tema, não um plugin de terceiro.
-
-### Outros cuidados
-
-- `declare(strict_types=1)` e tipagem em todo o código PHP;
-- Sem uso de ObjectManager direto, helpers em template ou lógica em controller;
-- Estados visuais: normal, estoque baixo, esgotado, erro de rede, animação de pulso quando a quantidade muda, `aria-live` para acessibilidade e suporte a `prefers-reduced-motion`;
-- Se o SKU configurado não existir ou o produto estiver desabilitado, o box simplesmente não é renderizado (com log de aviso) — a homepage nunca quebra;
-- Traduções `en_US` e `pt_BR` (`i18n/`).
-
-## Testes unitários
-
-```bash
-vendor/bin/phpunit -c dev/tests/unit/phpunit.xml.dist \
-  app/code/Crevellari/FeaturedProduct/Test/Unit
+```graphql
+{
+    featuredProductStock {
+        sku
+        qty
+        is_salable
+        updated_at
+    }
+}
 ```
 
-## Compatibilidade
+The GraphQL query is marked non-cacheable, matching the real-time nature of the data.
 
-- Magento 2.4.6 Open Source (PHP 8.1/8.2), tema Luma.
+## Hyvä
+
+An Alpine.js + Tailwind CSS variant of the box ships at
+`view/frontend/templates/hyva/product.phtml` (same view model, `fetch` with
+`If-None-Match`, visibility-aware polling). Point the block template at it from
+your Hyvä theme, or map it via
+[hyva-themes/module-compat-module-fallback](https://gitlab.hyva.io/hyva-themes/magento2-compat-module-fallback).
+
+## Architecture
+
+| Layer | Files | Role |
+|---|---|---|
+| Service contract | `Api/StockInformationInterface` + `Model/StockInformation` | Single owner of the stock business logic, consumed by the controller, REST, GraphQL and the server-side render |
+| DTO | `Api/Data/StockInterface` + `Model/Data/Stock` | Typed payload |
+| Controller | `Controller/Stock/Get.php` | Thin: HTTP → service → JSON, plus the ETag/304 handshake |
+| GraphQL | `etc/schema.graphqls` + `Model/Resolver/FeaturedProductStock` | Query resolver delegating to the same service |
+| ViewModel | `ViewModel/FeaturedProduct.php` | Product data for the template (no fat blocks) |
+| Block | `Block/FeaturedProduct.php` | Merges runtime config into the declared `jsLayout` (checkout pattern) and exposes cache identities for FPC invalidation |
+| Layout | `view/frontend/layout/cms_index_index.xml` | Reference container/block, block arguments, CSS loaded only on the homepage |
+| JS | `view/frontend/web/js/view/stock.js` | Knockout `uiComponent` loaded via RequireJS only where used |
+| Admin config | `etc/adminhtml/system.xml` + `Model/Config/Backend/Sku` | Dedicated section, ACL, defaults and SKU validation on save |
+
+Native layout mechanisms demonstrated: block declared through `referenceContainer`/`referenceBlock`, configured with **block arguments** (view model, title, `jsLayout`), the jsLayout structure declared in XML and enriched at runtime by `Block::getJsLayout()`, and a **Knockout** component with its own KO template.
+
+### Design aligned with Luma
+
+No invented visual vocabulary: the stock states reuse the theme's message
+colors (success `#e5efe5/#006400`, warning `#fdf0d5/#6f4400`, error
+`#fae5e5/#e02b27`), the CTA mirrors the Luma primary button (`#1979c3`, hover
+`#006bb4`, 3px radius), the heading uses the theme's `font-weight: 300` and
+borders/secondary text use the standard grays. The box reads as a native part
+of the theme.
+
+### Other care taken
+
+- `declare(strict_types=1)` and full type coverage; constructor DI only, no direct ObjectManager, no logic in templates or controllers;
+- Accessibility: `aria-live` limited to the quantity strip, visible focus, `prefers-reduced-motion` support, catalog-driven image alt;
+- A missing or disabled SKU never breaks the homepage — the box simply does not render (with a log notice);
+- Graceful visual states: initial server-side rendered value (no empty flash), update pulse, low stock, out of stock, network error.
+
+## Tests
+
+Unit tests (from a Magento installation):
+
+```bash
+cd dev/tests/unit
+../../../vendor/bin/phpunit ../../../app/code/Crevellari/FeaturedProduct/Test/Unit
+```
+
+Integration tests (require the [integration test framework](https://developer.adobe.com/commerce/testing/guide/integration/)):
+
+```bash
+cd dev/tests/integration
+../../../vendor/bin/phpunit ../../../app/code/Crevellari/FeaturedProduct/Test/Integration
+```
+
+CI runs a PHP 8.1/8.2 syntax check and `phpcs` with the `Magento2` ruleset on every push.
+
+## Compatibility
+
+- Magento 2.4.6 Open Source (PHP 8.1/8.2), Luma theme; Hyvä template variant included.
+
+## License
+
+[OSL-3.0](COPYING.txt) — the same license used by Magento Open Source.
+See [CHANGELOG.md](CHANGELOG.md) for release notes.
