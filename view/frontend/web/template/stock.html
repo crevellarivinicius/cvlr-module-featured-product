@@ -1,0 +1,38 @@
+<!--
+/**
+ * Copyright © Vinícius Crevellari. All rights reserved.
+ * See COPYING.txt for license details.
+ *
+ * Real-time stock indicator template.
+ */
+-->
+<div class="featured-product__stock-box"
+     aria-live="polite"
+     data-bind="css: {
+         'featured-product__stock-box--low': isLowStock,
+         'featured-product__stock-box--out': isOutOfStock,
+         'featured-product__stock-box--updated': justUpdated
+     }">
+    <span class="featured-product__stock-indicator" aria-hidden="true"></span>
+
+    <!-- ko ifnot: isOutOfStock -->
+    <span class="featured-product__stock-label" data-bind="i18n: 'Available for sale:'"></span>
+    <span class="featured-product__stock-qty" data-bind="text: qtyLabel"></span>
+    <span class="featured-product__stock-units" data-bind="i18n: 'units'"></span>
+    <!-- ko if: isLowStock -->
+    <span class="featured-product__stock-badge" data-bind="i18n: 'Last units!'"></span>
+    <!-- /ko -->
+    <!-- /ko -->
+
+    <!-- ko if: isOutOfStock -->
+    <span class="featured-product__stock-label featured-product__stock-label--out"
+          data-bind="i18n: 'Out of stock'"></span>
+    <!-- /ko -->
+</div>
+<div class="featured-product__stock-meta">
+    <span class="featured-product__stock-updated" data-bind="text: updatedAtLabel"></span>
+    <!-- ko if: hasError -->
+    <span class="featured-product__stock-error"
+          data-bind="i18n: 'Could not refresh, retrying...'"></span>
+    <!-- /ko -->
+</div>
