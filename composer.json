@@ -3,13 +3,14 @@
     "description": "Displays a featured product box on the Magento 2 homepage with real-time salable quantity updates.",
     "type": "magento2-module",
     "license": "OSL-3.0",
-    "version": "1.0.0",
     "keywords": [
         "magento2",
         "magento2-module",
         "msi",
         "salable-quantity",
         "knockout",
+        "graphql",
+        "hyva",
         "featured-product"
     ],
     "authors": [
@@ -18,6 +19,10 @@
             "email": "felippicrevellari@gmail.com"
         }
     ],
+    "support": {
+        "issues": "https://github.com/crevellarivinicius/cvlr-module-featured-product/issues",
+        "source": "https://github.com/crevellarivinicius/cvlr-module-featured-product"
+    },
     "require": {
         "php": "~8.1.0||~8.2.0",
         "magento/framework": "*",
@@ -25,6 +30,10 @@
         "magento/module-catalog-inventory": "*",
         "magento/module-store": "*",
         "magento/module-inventory-sales-api": "*"
+    },
+    "suggest": {
+        "magento/module-graph-ql": "Enables the featuredProductStock GraphQL query",
+        "hyva-themes/magento2-theme-module": "A Hyvä template variant is shipped under view/frontend/templates/hyva"
     },
     "autoload": {
         "files": [
