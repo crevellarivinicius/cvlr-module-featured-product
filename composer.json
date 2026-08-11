@@ -1,0 +1,37 @@
+{
+    "name": "crevellari/module-featured-product",
+    "description": "Displays a featured product box on the Magento 2 homepage with real-time salable quantity updates.",
+    "type": "magento2-module",
+    "license": "OSL-3.0",
+    "version": "1.0.0",
+    "keywords": [
+        "magento2",
+        "magento2-module",
+        "msi",
+        "salable-quantity",
+        "knockout",
+        "featured-product"
+    ],
+    "authors": [
+        {
+            "name": "Vinícius Augusto Crevellari",
+            "email": "felippicrevellari@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "~8.1.0||~8.2.0",
+        "magento/framework": "*",
+        "magento/module-catalog": "*",
+        "magento/module-catalog-inventory": "*",
+        "magento/module-store": "*",
+        "magento/module-inventory-sales-api": "*"
+    },
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Crevellari\\FeaturedProduct\\": ""
+        }
+    }
+}

@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Vinícius Crevellari. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="featured_product"
+                 translate="label"
+                 type="text"
+                 sortOrder="200"
+                 showInDefault="1"
+                 showInWebsite="1"
+                 showInStore="1">
+            <label>Featured Product</label>
+            <tab>catalog</tab>
+            <resource>Crevellari_FeaturedProduct::config</resource>
+            <group id="general" translate="label" type="text" sortOrder="10"
+                   showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>General</label>
+                <field id="enabled" translate="label comment" type="select" sortOrder="10"
+                       showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Show the featured product box on the homepage.</comment>
+                </field>
+                <field id="sku" translate="label comment" type="text" sortOrder="20"
+                       showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Product SKU</label>
+                    <validate>required-entry no-whitespace</validate>
+                    <comment>SKU of the product to feature on the homepage (e.g. 24-MB01).</comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+            </group>
+            <group id="display" translate="label" type="text" sortOrder="20"
+                   showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Display Settings</label>
+                <field id="refresh_interval" translate="label comment" type="text" sortOrder="10"
+                       showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Stock Refresh Interval (seconds)</label>
+                    <validate>required-entry validate-digits digits-range-5-300</validate>
+                    <comment>How often the available quantity is refreshed without reloading the page. Min 5, max 300 seconds.</comment>
+                </field>
+                <field id="low_stock_threshold" translate="label comment" type="text" sortOrder="20"
+                       showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Low Stock Threshold</label>
+                    <validate>required-entry validate-digits</validate>
+                    <comment>When the available quantity is at or below this value, the box highlights the stock as "last units". Use 0 to disable.</comment>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Vinícius Crevellari. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <featured_product>
+            <general>
+                <enabled>1</enabled>
+                <!-- Luma sample data product: Joust Duffle Bag -->
+                <sku>24-MB01</sku>
+            </general>
+            <display>
+                <refresh_interval>10</refresh_interval>
+                <low_stock_threshold>5</low_stock_threshold>
+            </display>
+        </featured_product>
+    </default>
+</config>
