@@ -106,9 +106,17 @@ define([
                 url: this.stockUrl,
                 type: 'GET',
                 dataType: 'json',
-                cache: false,
+                ifModified: true,
                 global: false
-            }).done(function (response) {
+            }).done(function (response, textStatus) {
+                if (textStatus === 'notmodified') {
+                    // 304: nothing changed since the last poll, just confirm freshness
+                    self.updatedAt(new Date().toISOString());
+                    self.hasError(false);
+
+                    return;
+                }
+
                 if (response && response.success) {
                     self.applyStockData(response);
                     self.hasError(false);
