@@ -20,8 +20,8 @@
         }
     ],
     "support": {
-        "issues": "https://github.com/crevellarivinicius/cvlr-module-featured-product/issues",
-        "source": "https://github.com/crevellarivinicius/cvlr-module-featured-product"
+        "issues": "https://github.com/crevellarivinicius/magento2-module-featured-product/issues",
+        "source": "https://github.com/crevellarivinicius/magento2-module-featured-product"
     },
     "require": {
         "php": "~8.1.0||~8.2.0",

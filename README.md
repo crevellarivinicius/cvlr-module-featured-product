@@ -1,6 +1,6 @@
 # Crevellari_FeaturedProduct
 
-[![CI](https://github.com/crevellarivinicius/cvlr-module-featured-product/actions/workflows/ci.yml/badge.svg)](https://github.com/crevellarivinicius/cvlr-module-featured-product/actions/workflows/ci.yml)
+[![CI](https://github.com/crevellarivinicius/magento2-module-featured-product/actions/workflows/ci.yml/badge.svg)](https://github.com/crevellarivinicius/magento2-module-featured-product/actions/workflows/ci.yml)
 ![Magento](https://img.shields.io/badge/Magento-2.4.6%20Open%20Source-ee672f)
 ![PHP](https://img.shields.io/badge/PHP-8.1%20%7C%208.2-777bb4)
 ![License](https://img.shields.io/badge/license-OSL--3.0-2ea44f)
